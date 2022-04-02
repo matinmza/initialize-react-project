@@ -8,10 +8,16 @@ import { RemoveTokenAction } from "store/actions/TokenAction";
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   return (
     <div>
       <div>Dashboard</div>
+      <Button
+        onClick={() => {
+          navigate("/content");
+        }}
+      >
+        Content
+      </Button>
       <Button
         onClick={() => {
           dispatch(RemoveTokenAction());
@@ -24,4 +30,6 @@ const Dashboard = () => {
   );
 };
 
-export default Wrapper(Dashboard, { needLogin: true });
+export default Wrapper(Dashboard, {
+  needLogin: true,
+});

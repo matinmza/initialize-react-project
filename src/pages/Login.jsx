@@ -9,9 +9,16 @@ const Login = () => {
   const navigator = useNavigate();
   const dispatch = useDispatch();
   const handleLogin = () => {
-    dispatch(TokenAction({ username: "matin", token: "23-48-82357" }));
+    dispatch(
+      TokenAction({
+        username: "matin",
+        token: "23-48-82357",
+        permissions: ["developer", "admin"],
+      })
+    );
     navigator("/dashboard");
   };
+
   return (
     <div>
       <Button onClick={handleLogin}>login</Button>

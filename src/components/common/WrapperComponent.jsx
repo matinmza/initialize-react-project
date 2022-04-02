@@ -1,14 +1,13 @@
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import _isEmpty from "lodash/isEmpty";
+import _ from "lodash";
 
 import AuthLayout from "layout/AuthLayout";
 import DashboardLayout from "layout/DashboardLayout";
 
 const WrapperComponent = ({ Component, options }) => {
   const token = useSelector((state) => state.token);
-
   const navigate = useNavigate();
   // add layout here
   let Layout;
@@ -20,11 +19,32 @@ const WrapperComponent = ({ Component, options }) => {
       Layout = AuthLayout;
       break;
     default:
+      Layout = Fragment;
       break;
   }
 
-  const userNotLoginAndNeedLogin = options.needLogin && _isEmpty(token);
-  const userLoginAndNeedNotLogin = options.needNotLogin && !_isEmpty(token);
+  // check for have permission user
+  let havePermission = "none";
+  if (options.guard !== null) {
+    // developer send role for check and list roles has available
+    const isArrayGuard = _.isArray(options.guard);
+    const userPermissions = _.get(token, ["permissions"], []);
+
+    havePermission = userPermissions.some((userPermission) => {
+      if (isArrayGuard) {
+        const existPermissionInList = options.guard.some(
+          (guardSendForCheck) => guardSendForCheck === userPermission
+        );
+        return existPermissionInList;
+      } else {
+        return userPermission === options.guard;
+      }
+    });
+  }
+
+  // check user for login or not login
+  const userNotLoginAndNeedLogin = options.needLogin && _.isEmpty(token);
+  const userLoginAndNeedNotLogin = options.needNotLogin && !_.isEmpty(token);
 
   useEffect(() => {
     if (userNotLoginAndNeedLogin) {
@@ -33,9 +53,17 @@ const WrapperComponent = ({ Component, options }) => {
     if (userLoginAndNeedNotLogin) {
       navigate("/");
     }
-  }, [navigate, userNotLoginAndNeedLogin, userLoginAndNeedNotLogin]);
+    if (!havePermission) {
+      navigate("/");
+    }
+  }, [
+    navigate,
+    userNotLoginAndNeedLogin,
+    userLoginAndNeedNotLogin,
+    havePermission,
+  ]);
 
-  if (userNotLoginAndNeedLogin && userLoginAndNeedNotLogin) {
+  if (userNotLoginAndNeedLogin || userLoginAndNeedNotLogin || !havePermission) {
     return <div></div>;
   }
 
