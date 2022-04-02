@@ -2,33 +2,30 @@ import { Fragment, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
-
-import AuthLayout from "layout/AuthLayout";
-import DashboardLayout from "layout/DashboardLayout";
+import configWrapper from "config.wrapper";
 
 const WrapperComponent = ({ Component, options }) => {
-  const token = useSelector((state) => state.token);
+  const token = useSelector((state) => state[configWrapper.userDetailName]);
   const navigate = useNavigate();
+
   // add layout here
-  let Layout;
-  switch (options.layout) {
-    case "dashboard":
-      Layout = DashboardLayout;
-      break;
-    case "auth":
-      Layout = AuthLayout;
-      break;
-    default:
-      Layout = Fragment;
-      break;
-  }
+  let Layout = <Fragment></Fragment>;
+  configWrapper.layout.forEach((item) => {
+    if (options.layout === item.name) {
+      Layout = item.layout;
+    }
+  });
 
   // check for have permission user
   let havePermission = "none";
   if (options.guard !== null) {
     // developer send role for check and list roles has available
     const isArrayGuard = _.isArray(options.guard);
-    const userPermissions = _.get(token, ["permissions"], []);
+    const userPermissions = _.get(
+      token,
+      configWrapper.permissionRouteInToken,
+      []
+    );
 
     havePermission = userPermissions.some((userPermission) => {
       if (isArrayGuard) {
@@ -48,13 +45,13 @@ const WrapperComponent = ({ Component, options }) => {
 
   useEffect(() => {
     if (userNotLoginAndNeedLogin) {
-      navigate("/login");
+      navigate(configWrapper.redirect.userNotLoginAndNeedLogin);
     }
     if (userLoginAndNeedNotLogin) {
-      navigate("/");
+      navigate(configWrapper.redirect.userLoginAndNeedNotLogin);
     }
     if (!havePermission) {
-      navigate("/");
+      navigate(configWrapper.redirect.notHavePermission);
     }
   }, [
     navigate,

@@ -1,11 +1,7 @@
 import WrapperComponent from "components/common/WrapperComponent";
+import configWrapper from "config.wrapper";
 
-const initialOption = {
-  needLogin: true,
-  needNotLogin: false,
-  layout: "dashboard",
-  guard: null,
-};
+const initialOption = configWrapper.defaultWrapper;
 
 const Wrapper = (Component, options = initialOption) => {
   return () => (
